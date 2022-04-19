@@ -380,7 +380,7 @@ const char setupHtml[] PROGMEM = R"rawliteral(
     }
   </style>
 </head>
-<body>
+<body onload="loaded();">
   <h2>PV Akku Setup</h2>
   <p>
     <span class="dht-labels">Batterie-Spannung</span> 
@@ -401,6 +401,17 @@ const char setupHtml[] PROGMEM = R"rawliteral(
   reasonably matches the voltmeter reading. Click save to update the channel with the new calibration factor.
 </body>
 <script>
+
+function loaded(){
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (this.readyState == 4 && this.status == 200) {
+      document.getElementById("inputCalCal").value = this.responseText;
+    }
+  };
+  xhttp.open("GET", "/values?name=vccAdj", true);
+  xhttp.send();
+}
 
 setInterval(function ( ) {
   var xhttp = new XMLHttpRequest();
@@ -455,6 +466,9 @@ void handleValues() {
       t=t/24;
       d=t;
       sprintf(txt,"%d Tage %d:%02d:%02d",d,h,m,s);
+    }
+    else if(!strcasecmp(pname.c_str(),"vccAdj")){
+      sprintf(txt,"%f",1/vccBatAdjust);
     }
     else{
       sprintf(txt,"ungueltiger name %s",pname);
